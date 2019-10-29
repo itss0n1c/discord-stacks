@@ -20,7 +20,6 @@
   },
   "homepage": "https://github.com/itss0n1c/discord-stacks#readme",
   "dependencies": {
-    "discord.js": "github:discordjs/discord.js",
-    "mongodb": "^3.3.2"
+    "discord.js": "github:discordjs/discord.js"
   }
 }

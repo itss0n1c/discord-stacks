@@ -31,7 +31,7 @@ class Bot {
                 switch (parse.type) {
                     case 'function':
                       // return msg.reply(`Function name ${parse.name} requested with args ${parse.args}`)
-                       return this.run(parse.name, parse.args).then((data) => {
+                       return this.run(parse.name, msg, parse.args).then((data) => {
                            return msg.reply(data);
                        }).catch((e) => {
                            console.log(e);
@@ -206,8 +206,8 @@ class Bot {
     }
 
     
-    run(command, args) {
-        const self = this;
+    run(command, msg, args) {
+        //const self = this;
         return new Promise( async (resolve, reject) => {
         
             if(!this.commands.hasOwnProperty(command)) {
@@ -215,7 +215,15 @@ class Bot {
             }
 
             try {
-               var res = await this.commands[command].call(self, args);
+               var res = await this.commands[command].call({this: this, msg, isAdmin: ((user) => {
+                   //console.log(user);
+                if(this.owners.includes(user.id)) {
+                    return true;
+                } else {
+                    console.log(this.owners, user.id);
+                    return false;
+                }
+               })(msg.author)}, args);
             } catch(e) {
                 return reject(e);
             }
