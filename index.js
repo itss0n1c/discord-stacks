@@ -4,7 +4,8 @@ class Bot {
         this.prefix = prefix || 'bot';
         this.token = token || "";
         this.variables = {};
-        this.commands = commands || {};
+        
+        
         this.owners = owners || [];
 
         if(this.token == "") {
@@ -15,8 +16,27 @@ class Bot {
             throw Error("Add owner IDs to the Bot class!")
         }
         
-        const Discord = require('discord.js');
-        this.client = new Discord.Client();
+        this.Discord = require('discord.js');
+        this.client = new this.Discord.Client();
+
+        this.commands =  {};
+
+        const fs = require("fs")
+        const path = require("path")
+        console.log(__dirname)
+        const cmdsDir = fs.readdirSync(path.join(__dirname, "commands"))
+        console.log(cmdsDir)
+        cmdsDir.forEach((file) => {
+            if(file.endsWith(".js")) {
+                this.commands[file.replace(".js", "")] = require(`./commands/${file}`);
+            }
+        })
+        
+        Object.keys(commands).forEach((key) => {
+            this.commands[key] = commands[key];
+        })
+        console.log(this.commands)
+        
 
 
 
@@ -26,26 +46,27 @@ class Bot {
         this.client.login(this.token);
         this.client.on('message', async msg => {
             //console.log(msg.content)
+            //console.log([msg.channel, msg.id, ])
             const parse = this.parseMessage(msg);
             if (parse.hasOwnProperty("status") && parse.status) {
                 switch (parse.type) {
                     case 'function':
                       // return msg.reply(`Function name ${parse.name} requested with args ${parse.args}`)
                        return this.run(parse.name, msg, parse.args).then((data) => {
-                           return msg.reply(data);
+                           return this.send(data, msg.channel);
                        }).catch((e) => {
                            console.log(e);
                            if(e == 404) {
-                               return msg.reply(`command ${parse.name}() doesn't exist!`)
+                               return this.send(`command ${parse.name}() doesn't exist!`, msg.channel)
                            }
-                           return msg.reply("Something went wrong!");
+                           return this.send("Something went wrong!", msg.channel);
                        });
                     case 'function_info':
-                       return msg.reply(`Function info for ${parse.name}`)
+                       return this.send(`Function info for ${parse.name}`, msg.channel)
                     case 'prefix':
-                       return msg.reply(parse.data)
+                       return this.send(parse.data, msg.channel)
                     case 'variable':
-                       return msg.reply(`Variable name ${parse.name} requested`)
+                       return this.send(`Variable name ${parse.name} requested`, msg.channel)
                     case null: 
                         return console.log("Wasn't able to parse that..."+ msg.content)
                     default:
@@ -56,11 +77,13 @@ class Bot {
             } else if(!parse.status) {
                 switch (parse.type) {
                     case 'function':
-                        return msg.reply("I'm having some trouble parsing that...")
+                        return this.send("I'm having some trouble parsing that...", msg.channel)
                     case null:
-                        return msg.reply("Hey, you've triggered my prefix, anything I can help you with?")
+                        return this.send("Hey, you've triggered my prefix, anything I can help you with?", msg.channel)
                     case "syntax":
-                        return msg.reply(parse.error);
+                        return this.send(parse.error, msg.channel);
+                    case "failed_args": 
+                        return this.send(parse.error, msg.channel);
                     default:
                         break;
                         //return console.log(parse);
@@ -68,6 +91,18 @@ class Bot {
                 
             }
         });
+    }
+
+    
+    send(msg, channel) {
+        var embed = new this.Discord.RichEmbed();
+        embed.setColor("#007aff")
+      //  .setTitle(`Response for command`)
+        .setDescription(msg)
+        .setTimestamp()
+        .setFooter(this.client.user.username, this.client.user.displayAvatarURL)
+
+        return channel.send('', embed);
     }
 
     parseMessage(msg) {
@@ -139,10 +174,25 @@ class Bot {
 
                 }
 
+                const ogargs = parseArgs.slice(0);
                 const args = ((args) => {
-                    return JSON.parse(`[${args.join("").substring(1, rightBracket)}]`);
+                    try {
+                        var data = JSON.parse(`[${args.join("").substring(1, rightBracket)}]`);
+                    } catch(e) {
+                        return [null, e]
+                    }
+                    return data;
                 })(parseArgs)
-                console.log("args", args);
+                //console.log("args", args);
+
+                if(args[0] == null) {
+                    const data = ogargs.join("").substring(1, rightBracket)
+                    return {
+                        status: false,
+                        type: "failed_args",
+                        error: `\`\`\`js\n ${this.prefix}.${funcname}(${data})\`\`\`\n ${args[1]}\n Remember to close all quotations properly!\n`
+                    }
+                }
 
 
 
