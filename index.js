@@ -20,23 +20,9 @@ class Bot {
         this.client = new this.Discord.Client();
 
         this.commands =  {};
+        this.usrcmds = commands;
 
-        const fs = require("fs")
-        const path = require("path")
-        console.log(__dirname)
-        const cmdsDir = fs.readdirSync(path.join(__dirname, "commands"))
-        console.log(cmdsDir)
-        cmdsDir.forEach((file) => {
-            if(file.endsWith(".js")) {
-                this.commands[file.replace(".js", "")] = require(`./commands/${file}`);
-            }
-        })
-        
-        Object.keys(commands).forEach((key) => {
-            this.commands[key] = commands[key];
-        })
-        console.log(this.commands)
-        
+        this.loadCmds();
 
 
 
@@ -93,6 +79,10 @@ class Bot {
         });
     }
 
+    log() {
+        
+    }
+
     
     send(msg, channel) {
         var embed = new this.Discord.RichEmbed();
@@ -103,6 +93,23 @@ class Bot {
         .setFooter(this.client.user.username, this.client.user.displayAvatarURL)
 
         return channel.send('', embed);
+    }
+
+    loadCmds() {
+        const fs = require("fs")
+        const path = require("path")
+     //   console.log(__dirname)
+        const cmdsDir = fs.readdirSync(path.join(__dirname, "commands"))
+       // console.log(cmdsDir)
+        cmdsDir.forEach((file) => {
+            if(file.endsWith(".js")) {
+                this.commands[file.replace(".js", "")] = require(`./commands/${file}`);
+            }
+        })
+        
+        Object.keys(this.usrcmds).forEach((key) => {
+            this.commands[key] = this.usrcmds[key];
+        })
     }
 
     parseMessage(msg) {
@@ -185,7 +192,7 @@ class Bot {
                 })(parseArgs)
                 //console.log("args", args);
 
-                if(args[0] == null) {
+                if(args[0] == null && args.hasOwnProperty(1)) {
                     const data = ogargs.join("").substring(1, rightBracket)
                     return {
                         status: false,
