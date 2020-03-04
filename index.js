@@ -128,7 +128,7 @@ class Bot {
 
     
     send(msg, channel) {
-        var embed = new this.Discord.RichEmbed();
+        var embed = new this.Discord.MessageEmbed();
         embed.setColor("#007aff")
       //  .setTitle(`Response for command`)
         .setDescription(msg)
@@ -138,7 +138,7 @@ class Bot {
         return channel.send('', embed);
     }
     embed(desc, fields) {
-        var embed = new this.Discord.RichEmbed();
+        var embed = new this.Discord.MessageEmbed();
         embed.setColor("#007aff")
         .setDescription(desc)
         .setTimestamp()

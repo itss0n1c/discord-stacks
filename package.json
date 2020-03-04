@@ -7,6 +7,7 @@
     "type": "git",
     "url": "git+https://github.com/itss0n1c/discord-stacks.git"
   },
+  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
   "keywords": [
     "discord",
     "js",
@@ -21,6 +22,6 @@
   "homepage": "https://github.com/itss0n1c/discord-stacks#readme",
   "dependencies": {
     "chalk": "^2.4.2",
-    "discord.js": "^11.5.1"
+    "discord.js": "^12.0.1"
   }
 }
