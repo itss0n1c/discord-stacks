@@ -20,13 +20,38 @@ class Bot {
         this.client = new this.Discord.Client();
 
         this.commands =  {};
-        this.usrcmds = commands;
 
-        this.loadCmds();
+        const fs = require("fs")
+        const path = require("path")
+        console.log(__dirname)
+        const cmdsDir = fs.readdirSync(path.join(__dirname, "commands"))
+        console.log(cmdsDir)
+        cmdsDir.forEach((file) => {
+            if(file.endsWith(".js")) {
+                this.commands[file.replace(".js", "")] = require(`./commands/${file}`);
+            }
+        })
+        
+        Object.keys(commands).forEach((key) => {
+            this.commands[key] = commands[key];
+        })
+        console.log(this.commands)
+        
 
-
+          
+          this.client.on("guildCreate", guild => {
+            
+            console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
+            this.client.user.setActivity(`on ${this.client.guilds.size} servers`);
+          });
+          
+          this.client.on("guildDelete", guild => {
+            console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
+            this.client.user.setActivity(`on ${this.client.guilds.size} servers`);
+          });
 
         this.client.on('ready', () => {
+            this.client.user.setActivity(`on ${this.client.guilds.size} servers`);
             console.log(`Logged in as ${this.client.user.tag}!`);
         });
         this.client.login(this.token);
@@ -39,7 +64,10 @@ class Bot {
                     case 'function':
                       // return msg.reply(`Function name ${parse.name} requested with args ${parse.args}`)
                        return this.run(parse.name, msg, parse.args).then((data) => {
-                           return this.send(data, msg.channel);
+                           if(data !== null) {
+                            return this.send(data, msg.channel);
+                           }
+                           
                        }).catch((e) => {
                            console.log(e);
                            if(e == 404) {
@@ -48,7 +76,26 @@ class Bot {
                            return this.send("Something went wrong!", msg.channel);
                        });
                     case 'function_info':
-                       return this.send(`Function info for ${parse.name}`, msg.channel)
+                        const cmd = this.commands[parse.name];
+                        const embed = this.embed(`Function info for ${parse.name}`);
+                        embed.addField("Name", cmd.name, true)
+                        embed.addField("Description", cmd.description, false);
+                        embed.addField("Owners Only", !!cmd.ownerOnly, true)
+                        if (cmd.hasOwnProperty('arguments')) {
+                            if(cmd.arguments.hasOwnProperty('typeof')) {
+                                embed.addField("Arguments", `All args set to typeof ${cmd.arguments.typeof}`)
+                            } else if(typeof cmd.arguments[0] !== 'undefined') {
+                                var cmdargs = ""
+                                cmd.arguments.forEach((arg, i) => {
+                                    cmdargs += `Index '${i}' name is '${arg.name}' with typeof '${arg.typeof}'\n`
+                                })
+                                embed.addField("Arguments", cmdargs, true)
+                            }
+                        }
+                        
+                        //embed.addField("Arguments", `\`\`\`${}\`\`\``)
+                        return msg.channel.send('', embed)
+                       //return this.send(`Function info for ${parse.name}`, msg.channel)
                     case 'prefix':
                        return this.send(parse.data, msg.channel)
                     case 'variable':
@@ -79,10 +126,6 @@ class Bot {
         });
     }
 
-    log() {
-        
-    }
-
     
     send(msg, channel) {
         var embed = new this.Discord.RichEmbed();
@@ -94,22 +137,13 @@ class Bot {
 
         return channel.send('', embed);
     }
-
-    loadCmds() {
-        const fs = require("fs")
-        const path = require("path")
-     //   console.log(__dirname)
-        const cmdsDir = fs.readdirSync(path.join(__dirname, "commands"))
-       // console.log(cmdsDir)
-        cmdsDir.forEach((file) => {
-            if(file.endsWith(".js")) {
-                this.commands[file.replace(".js", "")] = require(`./commands/${file}`);
-            }
-        })
-        
-        Object.keys(this.usrcmds).forEach((key) => {
-            this.commands[key] = this.usrcmds[key];
-        })
+    embed(desc, fields) {
+        var embed = new this.Discord.RichEmbed();
+        embed.setColor("#007aff")
+        .setDescription(desc)
+        .setTimestamp()
+        .setFooter(this.client.user.username, this.client.user.displayAvatarURL)
+        return embed;
     }
 
     parseMessage(msg) {
@@ -145,7 +179,7 @@ class Bot {
             console.log(ending);
 
             // check if it's a function
-            var functest = ending.match(/\.\w+\(([^)]*)\)/g);
+            var functest = ending.match(/\.\w+\((.*)\)/g);
             console.log("functest", functest);
             if (functest !== null) {
                 //console.log(functest);
@@ -166,10 +200,10 @@ class Bot {
                 const parseArgs = ((func.match(/(\([\s\S]+\))/gm) !== null) ? func.match(/(\([\s\S]+\))/gm) : []);
 
 
-                const rightBracket = this.rightBracketIndex(parseArgs);
+                //const rightBracket = this.rightBracketIndex(parseArgs);
 
 
-                if (rightBracket === false) {
+               /* if (rightBracket === false) {
 
                     if (!ending.includes("()")) {
                         return {
@@ -179,31 +213,49 @@ class Bot {
                         }
                     }
 
-                }
-
+                }*/
+                console.log("func", func)
+                console.log("parseArgs", parseArgs)
                 const ogargs = parseArgs.slice(0);
                 const args = ((args) => {
                     try {
-                        var data = JSON.parse(`[${args.join("").substring(1, rightBracket)}]`);
+                        console.log(args.join(""))
+                        const argmsg = args.join("").replace(/`/g, "")
+                        var data = JSON.parse(`[${argmsg.substring(1, argmsg.length -1)}]`);
+                        console.log(data);
                     } catch(e) {
                         return [null, e]
                     }
                     return data;
                 })(parseArgs)
-                //console.log("args", args);
-
-                if(args[0] == null && args.hasOwnProperty(1)) {
-                    const data = ogargs.join("").substring(1, rightBracket)
+                console.log("args", args);
+                
+                if(args.length == 0) {
+                    if(ending == `.${funcname}()`) {
+                        return {
+                            status: true,
+                            type: "function",
+                            args: [],
+                            name: funcname
+                        }
+                    }
+                } else if (args[0] == null) {
+                    const argmsg = ogargs.join("").replace(/`/g, "")
+                    const data = argmsg.substring(1, argmsg.length -1)
+                    console.log(data)
                     return {
                         status: false,
                         type: "failed_args",
-                        error: `\`\`\`js\n ${this.prefix}.${funcname}(${data})\`\`\`\n ${args[1]}\n Remember to close all quotations properly!\n`
+                        error: `\`\`\`js\n ${this.prefix}.${funcname}(${data}\`\`\`\n ${args[1]}\n Remember to close all quotations properly!\n`
                     }
                 }
+                
 
 
 
 
+              
+                console.log(args)
                 return {
                     status: true,
                     type: "function",
@@ -266,13 +318,64 @@ class Bot {
     run(command, msg, args) {
         //const self = this;
         return new Promise( async (resolve, reject) => {
-        
+            console.log(this.commands, command)
             if(!this.commands.hasOwnProperty(command)) {
                 return reject(404);
             }
+            const cmd = this.commands[command];
+            if(cmd.ownerOnly) {
+              //  console.log( msg.author.id,  this.owners[0])
+                if(!this.owners.includes(msg.author.id)) {
+                    return resolve('This command is for owners only!')
+                }
+            }
+
+            var notType = [];
+            if(args.length !== 0) { 
+                if(cmd.hasOwnProperty('arguments')) { 
+                    console.log(this.commands.arguments)
+                    if(cmd.arguments.hasOwnProperty('typeof')) {
+                        
+                        args = args.filter((arg, i) => {
+                            if(typeof arg == cmd.arguments.typeof) {
+                                return true;
+                            } else {
+                                console.log("not!", arg, i)
+                                notType.push({arg, i, typeof: cmd.arguments.typeof});
+                            }
+                        })
+                        console.log("testing arguments", args);
+                    } else if(typeof cmd.arguments[0] !== 'undefined') {
+                        var newargs = {};
+                        args.forEach((arg, i) => {
+                            if(typeof arg == cmd.arguments[i].typeof) {
+                                newargs[cmd.arguments[i].name] = arg;
+                            } else {
+                                notType.push({arg, i, typeof: cmd.arguments[i].typeof})
+                            }
+                            
+                        })
+                        args = newargs;
+                    }
+                }
+            } else {
+                
+                console.log("no arguments!")
+            }
+            //return;
+            console.log(args, notType);
+            if(typeof notType !== 'undefined' && notType.length > 0) {
+                console.log(notType);
+                var warnmsg = "";
+                notType.forEach((type) => {
+                    warnmsg += `The argument at [${type.i}] in the command ${command} is not typeof ${type.typeof}. Given type ${typeof type.arg}.\n`                    
+                })
+                const warnings = `\`\`\` ${warnmsg} \`\`\``
+                return this.send(warnmsg, msg.channel)
+            }
 
             try {
-               var res = await this.commands[command].call({this: this, msg, isAdmin: ((user) => {
+               var res = await cmd.handler.call({this: this, msg, isAdmin: ((user) => {
                    //console.log(user);
                 if(this.owners.includes(user.id)) {
                     return true;

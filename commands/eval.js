@@ -1,13 +1,11 @@
-module.exports = function(args) {
-    /*const run = eval(args[0])
-    
-    //const parsed;
-    if(Array.isArray(run)) {
-       // var parsed = 
-    } else if(typeof run == "object") {
-
+module.exports = {
+    name: "eval",
+    description: "Literally runs JS through the bot, owner permission only!",
+    ownerOnly: true,
+    arguments: {
+        typeof: 'string'
+    },
+    handler() {
+        return "WIP"
     }
-    console.log(run)
-    return `\`\`\`js\n${run}\`\`\``*/
-    return "WIP"
 }

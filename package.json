@@ -1,26 +1,53 @@
 {
-  "name": "discord-stacks",
-  "version": "1.0.3",
-  "description": "A JS-like command system for Discord Bots",
-  "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/itss0n1c/discord-stacks.git"
+  "_from": "discord-stacks@1.2.0",
+  "_id": "discord-stacks@1.2.0",
+  "_inBundle": false,
+  "_integrity": "sha512-Xa+W1Jmhgx+aZRPRKivL8Jr1yMXEmhcm5m0CcN4VAGGjwNSPZaJpLuJxjYT35qHWigjKf4qQzSLKjWhHvU8rAg==",
+  "_location": "/discord-stacks",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "discord-stacks@1.2.0",
+    "name": "discord-stacks",
+    "escapedName": "discord-stacks",
+    "rawSpec": "1.2.0",
+    "saveSpec": null,
+    "fetchSpec": "1.2.0"
   },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/discord-stacks/-/discord-stacks-1.2.0.tgz",
+  "_shasum": "f9e796f96fb8605cf2eb1d364239181b6ad993bb",
+  "_spec": "discord-stacks@1.2.0",
+  "_where": "/home/s0n1c/bot/mybot",
+  "author": {
+    "name": "S0n1c"
+  },
+  "bugs": {
+    "url": "https://github.com/itss0n1c/discord-stacks/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "discord.js": "^11.5.1"
+  },
+  "deprecated": false,
+  "description": "A JS-like command system for Discord Bots",
+  "homepage": "https://github.com/itss0n1c/discord-stacks#readme",
   "keywords": [
     "discord",
     "js",
     "s0n1c",
     "discordjs"
   ],
-  "author": "S0n1c",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/itss0n1c/discord-stacks/issues"
+  "main": "index.js",
+  "name": "discord-stacks",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itss0n1c/discord-stacks.git"
   },
-  "homepage": "https://github.com/itss0n1c/discord-stacks#readme",
-  "dependencies": {
-    "chalk": "^2.4.2",
-    "discord.js": "^11.5.1"
-  }
+  "version": "1.2.0"
 }
