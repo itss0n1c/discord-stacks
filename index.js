@@ -128,12 +128,13 @@ class Bot {
 
     
     send(msg, channel) {
+        console.log(this.client.user)
         var embed = new this.Discord.MessageEmbed();
         embed.setColor("#007aff")
       //  .setTitle(`Response for command`)
         .setDescription(msg)
         .setTimestamp()
-        .setFooter(this.client.user.username, this.client.user.displayAvatarURL)
+        .setFooter(this.client.user.username, `https://cdn.discordapp.com/avatars/${this.client.user.id}/${this.client.user.avatar}.png?size=256`)
 
         return channel.send('', embed);
     }

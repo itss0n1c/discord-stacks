@@ -7,7 +7,9 @@
     "type": "git",
     "url": "git+https://github.com/itss0n1c/discord-stacks.git"
   },
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "keywords": [
     "discord",
     "js",
